@@ -1,0 +1,220 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.UI;
+
+public class ControlFirstPanelUI : MonoBehaviour
+{
+	public bool buttonChangeWithGestures = true;
+	public bool buttonChangeWithKeys = true;
+	public List<Image> buttons;
+	public List<Image> fruits;
+	private List<Animator> animators;
+	private GestureListener gestureListener;
+	private PanelCenter panelCenter;
+	private AudioSource audioSource;
+	private int curBtn;
+	private int gravityScale = 10;
+	private int upForce = 3000;
+	private int curBtnOutY = -300;
+	public AudioClip menu;
+	public AudioClip start;
+	private ImageToUserMap imageToUserMap;
+	public RawImage kinectImg;
+	private bool isChosing = false;
+	public List<GameObject> tipPanels;
+	private int curTipPanel;
+
+	void Start ()
+	{
+		Screen.showCursor = false;
+		if (SingularValue.ifFirstTimeShowFirstPanel) {
+			SingularValue.ifFirstTimeShowFirstPanel = false;
+			tipPanels [0].SetActive (true);
+			curTipPanel = 0;
+		} else {
+			SingularValue.ifShowTipPanel = false;
+			SingularValue.ifTipPanelShow = false;
+		}
+		SingularValue.ifCheckGesture = true;
+		gestureListener = Camera.main.GetComponent<GestureListener> ();
+		panelCenter = GameObject.FindWithTag ("Canvas").GetComponent<PanelCenter> ();
+		imageToUserMap = GameObject.FindWithTag ("Canvas").GetComponent<ImageToUserMap> ();
+		imageToUserMap.kinectImg = kinectImg;
+		audioSource = gameObject.GetComponent<AudioSource> ();
+		animators = new List<Animator> ();
+		playMusic (menu);
+		initButtons ();
+		curBtn = 0;
+	}
+
+	void Update ()
+	{
+		KinectManager manager = KinectManager.Instance;
+		if (!manager || !manager.IsInitialized () || !manager.IsUserDetected ())
+			return;
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			if (SingularValue.ifShowTipPanel) {
+				destroyTipPanel ();
+			} else {
+				if (Screen.fullScreen) {
+					WindowModeChange ();
+					//Debug.Log ("WindowMode");
+				} else {
+					FullScreenSet ();
+					//Debug.Log ("Full Screen");
+				}
+			}	
+		}
+
+		if (!isChosing) {
+			if (buttonChangeWithGestures && !SingularValue.ifShowTipPanel) {
+				if (Input.GetKey (KeyCode.LeftArrow)) {
+					moveNext ();
+				} else if (Input.GetKey (KeyCode.RightArrow)) {
+					moveForward ();
+				} else if (Input.GetKey (KeyCode.Space)) {
+					chooseBtn ();
+				} else if (Input.GetKey (KeyCode.UpArrow)) {
+					SingularValue.ifTipPanelShow = true;
+					showTipPanel ();
+				} else if (Input.GetKey (KeyCode.DownArrow)) {
+					SingularValue.ifShowTipPanel = true;
+					SingularValue.ifTipPanelShow = true;
+					tipPanels [0].SetActive (true);
+				}
+			}
+			if (buttonChangeWithGestures && gestureListener) {
+				if (gestureListener.isSwipeLeft ()) {
+					showTipPanel ();
+				} else if (gestureListener.isSwipeDown ()) {
+					SingularValue.ifShowTipPanel = true;
+					curTipPanel = 0;
+					tipPanels [0].SetActive (true);
+				}else if (gestureListener.isSwipeRight ()) {
+					if(SingularValue.ifShowTipPanel){
+						destroyTipPanel();
+					}
+					else {
+						moveNext ();
+					}
+				} else if (gestureListener.isChooseGesture ()) {
+					chooseBtn ();
+				} 
+		
+			}
+		} else {
+			ifAllowChangePanel ();
+		}
+	}
+
+	private void showTipPanel ()
+	{
+		if (curBtn != 2) {
+			SingularValue.ifShowTipPanel = true;
+			curTipPanel = curBtn + 1;
+			tipPanels [curTipPanel].SetActive (true);
+		}
+	}
+
+	private void destroyTipPanel ()
+	{
+		tipPanels [curTipPanel].SetActive (false);
+		SingularValue.ifTipPanelShow = false;
+		SingularValue.ifShowTipPanel = false;
+	}
+
+	private void initButtons ()
+	{
+		for (int i = 0; i < buttons.Count; i++) {
+			animators.Add (buttons [i].GetComponent<Animator> ());
+			if (i != 0) {
+				animators [i].enabled = false;
+			}
+		}
+	}
+
+	private void ifAllowChangePanel ()
+	{
+		RectTransform rtf = fruits [curBtn].transform as RectTransform;
+		if (rtf.anchoredPosition.y < curBtnOutY) {
+			switch (curBtn) {
+			case 0:
+				panelCenter.showGame2Panel ();
+				Destroy (gameObject);
+				break;
+			case 1:
+				panelCenter.showGamePanel ();
+				Destroy (gameObject);
+				break;
+			case 2:
+				Application.Quit ();
+				break;
+			default:
+				break; 
+			}
+
+		}
+	}
+
+	private void moveNext ()
+	{
+		animators [curBtn].enabled = false;
+		curBtn = (curBtn + 1) % 3;
+		if (!animators [curBtn].enabled) {
+			animators [curBtn].enabled = true;
+		}
+	}
+
+	private void moveForward ()
+	{
+		animators [curBtn].enabled = false;
+		if (curBtn <= 0) {
+			curBtn = 2;
+		} else {
+			curBtn -= 1;
+		}
+		if (!animators [curBtn].enabled) {
+			animators [curBtn].enabled = true;
+		}
+	}
+
+	private void chooseBtn ()
+	{
+		isChosing = true;
+		List<Rigidbody2D> rigidbodies = new List<Rigidbody2D> ();
+		for (int i = 0; i < fruits.Count; i++) {
+			rigidbodies.Add (fruits [i].GetComponent<Rigidbody2D> ());
+			rigidbodies [i].gravityScale = gravityScale;
+			buttons [i].enabled = false;
+		}
+		rigidbodies [curBtn].AddForce (new Vector2 (0, upForce));
+		if (!(curBtn == 2)) {
+			if (audio.isPlaying) {
+				audio.Stop ();
+			}
+			playMusic (start);
+		}
+	}
+
+	private void playMusic (AudioClip music)
+	{
+		audioSource.clip = music;
+		audioSource.Play ();
+	}
+
+	public void WindowModeChange ()
+	{
+		Resolution[] resolutions = Screen.resolutions;
+		Screen.SetResolution (resolutions [resolutions.Length - 1].width, resolutions [resolutions.Length - 1].height, false);  
+		Screen.fullScreen = false;
+	}
+
+	public void FullScreenSet ()
+	{
+		Resolution[] resolutions = Screen.resolutions;
+		Screen.SetResolution (resolutions [resolutions.Length - 1].width, resolutions [resolutions.Length - 1].height, true);  
+		Screen.fullScreen = true;
+	}
+}

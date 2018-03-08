@@ -1,0 +1,203 @@
+﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+using System.Collections.Generic;
+
+public class DetectFr1 : MonoBehaviour
+{
+	public HalfFruit fruitClone;
+	public GameObject bombBlowTagClone;
+	private Game2Rule gameRule;
+	public int forceX = 300;
+	public int forceHalfY = 3000;
+	private const int fruitOutY = -275;
+	public Splash splashClone;
+	public AudioClip slatter;
+	AudioSource sound;
+	public bool needDestroy = false;
+	private Vector2 lastRightHandPos = new Vector2(0,0);
+	private Vector2 lastleftHandPos = new Vector2(0,0);
+	private bool[] ifFirstRightHandPos;
+	private bool[] ifFirstLeftHandPos;
+	private int playerNum;
+
+	void Start ()
+	{
+		playerNum = SingularValue.playerNumber;
+		initIfFirstHandPos ();
+		GameObject gamePanelObj = GameObject.FindWithTag ("Game2");
+		gameRule = gamePanelObj.GetComponent<Game2Rule> ();
+		sound = gamePanelObj.GetComponent<AudioSource> ();
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		bool needDestroyFruit = false;
+		bool isOutDestroy = false;
+		if (KinectManager.Instance.IsUserDetected ()) {
+			List<long> players = new List<long> ();
+			players = KinectManager.Instance.GetUsersIdByNum (playerNum);
+			int jointRightType = (int)KinectInterop.JointType.HandRight;//表示右手
+			int jointLeftType = (int)KinectInterop.JointType.HandLeft;//表示左手
+			foreach (long userId in players) {
+				if (KinectManager.Instance.IsJointTracked (userId, jointRightType)) {
+					Vector3 HandPos = KinectManager.Instance.GetJointKinectPosition (userId, jointRightType);//获取右手信息
+					Vector3 HandScreenPos = Camera.main.WorldToScreenPoint (HandPos);//右手转换到屏幕坐标
+					Vector2 HandScrPos = new Vector2 (HandScreenPos.x, HandScreenPos.y);//三维坐标转换到二维
+					if (RectTransformUtility.RectangleContainsScreenPoint (gameObject.transform as RectTransform, HandScrPos, Camera.main) && Vector2.Distance(lastRightHandPos,HandScrPos) > SingularValue.minDistance) {
+						if(!ifFirstRightHandPos[players.IndexOf(userId)]){
+							needDestroyFruit = true;
+						}
+						else {
+							ifFirstRightHandPos[players.IndexOf(userId)] = false;
+						}
+					}
+					lastRightHandPos = HandScrPos;
+				}
+				if (KinectManager.Instance.IsJointTracked (userId, jointLeftType)) {
+					Vector3 HandPos = KinectManager.Instance.GetJointKinectPosition (userId, jointLeftType);//获取左手信息
+					Vector3 HandScreenPos = Camera.main.WorldToScreenPoint (HandPos);//右手转换到屏幕坐标
+					Vector2 HandScrPos = new Vector2 (HandScreenPos.x, HandScreenPos.y);//三维坐标转换到二维
+					if (RectTransformUtility.RectangleContainsScreenPoint (gameObject.transform as RectTransform, HandScrPos, Camera.main) && Vector2.Distance(lastleftHandPos,HandScrPos) > SingularValue.minDistance) {
+						if(!ifFirstLeftHandPos[players.IndexOf(userId)])
+						{
+							needDestroyFruit = true;
+
+						}
+						else {
+							ifFirstLeftHandPos[players.IndexOf(userId)] = false;
+						}
+					}
+					lastleftHandPos = HandScrPos;
+				}
+			}
+		} 
+		RectTransform rtf = gameObject.transform as RectTransform;
+		float curFruitY = rtf.anchoredPosition.y;
+		if (curFruitY < fruitOutY) {
+			needDestroyFruit = true;
+			isOutDestroy = true;
+		}
+
+		if (needDestroyFruit && gameRule.time > 0) {
+			if (isOutDestroy) {
+				if (gameObject.GetComponent<Fruit2> ().type == Contant.Type_Boom) {
+					gameRule.scoreNum++;
+				}
+			} else {
+				if (gameObject.GetComponent<Fruit2> ().type == Contant.Type_Boom) {
+					gameRule.showTag();
+					createTag();
+					if (gameRule.scoreNum >= 3)
+						gameRule.scoreNum -= 3;
+					else
+						gameRule.scoreNum = 0;
+				} else {
+					gameRule.scoreNum++;					      
+				}
+			}
+		} 
+
+		gameRule.scoreTxt.text = gameRule.scoreNum + "";
+		if (needDestroyFruit) {
+			if (isOutDestroy == false) {
+				if (gameObject.GetComponent<Fruit2> ().type != Contant.Type_Boom) {
+					createRightLeftFruit ();
+					playMusic (true);
+					Destroy (gameObject);			
+				} else {
+					playMusic (false);
+					Destroy (gameObject);
+				}
+				
+			} else {
+				Destroy (gameObject);
+			}
+		}
+
+		if (needDestroy) {
+			if (gameObject.GetComponent<Fruit2> ().type != Contant.Type_Boom) {
+				createRightLeftFruit ();
+				Destroy (gameObject);			
+			} else {
+				Destroy (gameObject);
+			}
+		}
+	}
+
+	private void initIfFirstHandPos(){
+		ifFirstRightHandPos = new bool[playerNum];
+		ifFirstLeftHandPos = new bool[playerNum];
+		for (int i = 0; i < playerNum; i++) {
+			ifFirstLeftHandPos[i] = true;
+			ifFirstRightHandPos[i] = true;
+		}
+	}
+	
+	private void createRightLeftFruit ()
+	{
+		HalfFruit leftFruit = Instantiate (fruitClone, transform.position, transform.rotation) as HalfFruit;
+		leftFruit.setType (gameObject.GetComponent<Fruit2> ().type + 1);
+		newFruitInit (leftFruit, true);
+		HalfFruit rightFruit = Instantiate (fruitClone, transform.position, transform.rotation) as HalfFruit;
+		rightFruit.setType (gameObject.GetComponent<Fruit2> ().type + 2);
+		newFruitInit (rightFruit, false);
+		Splash sl = Instantiate (splashClone) as Splash;
+		sl.setColor (gameObject.GetComponent<Fruit2> ().type);
+		newSplashInit (sl);
+		Destroy (sl.gameObject, 1f);
+	}
+
+	private void createTag()
+	{
+		GameObject bombBlow = Instantiate (bombBlowTagClone, transform.position, transform.rotation) as GameObject;
+		RectTransform curRtf = transform as RectTransform;
+		bombBlow.transform.SetParent (gameRule.transform.parent.transform);
+		RectTransform rtf = bombBlow.transform as RectTransform;
+		rtf.anchoredPosition3D = new Vector3 (0, 0, 0);
+		rtf.anchoredPosition = curRtf.anchoredPosition;
+		rtf.localScale = new Vector3 (1, 1, 1);
+	}
+	
+	private void newSplashInit (Splash s)
+	{
+		RectTransform curRtf = transform as RectTransform;
+		s.transform.SetParent (gameRule.transform);
+		RectTransform rtf = s.transform as RectTransform;
+		rtf.anchoredPosition3D = new Vector3 (0, 0, 0);
+		rtf.anchoredPosition = curRtf.anchoredPosition;
+		rtf.localScale = new Vector3 (1, 1, 1);
+	}
+	
+	private void newFruitInit (HalfFruit fruit, bool isLeft)
+	{
+		
+		RectTransform curRtf = transform as RectTransform;
+		fruit.transform.SetParent (gameRule.transform);
+		RectTransform rtf = fruit.transform as RectTransform;
+		rtf.anchoredPosition3D = new Vector3 (0, 0, 0);
+		rtf.anchoredPosition = curRtf.anchoredPosition;
+		rtf.localScale = new Vector3 (1, 1, 1);
+		
+		Rigidbody2D rb2d = fruit.GetComponent<Rigidbody2D> ();
+		if (isLeft) {
+			rb2d.AddForce (new Vector2 (-forceX, forceHalfY));
+		} else {
+			rb2d.AddForce (new Vector2 (forceX, forceHalfY));
+		}
+	}
+	
+	private void playMusic (bool ifFruit)
+	{
+		if (ifFruit) {
+			sound.clip = slatter;
+			sound.pitch = 1;
+			sound.volume = 1;
+			sound.Play ();
+		} else {
+			GameObject.FindWithTag("BombSound").GetComponent<AudioSource>().Play();
+		}
+	
+	}
+}

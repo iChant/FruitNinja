@@ -1,0 +1,119 @@
+﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+
+public class GameOverListener : MonoBehaviour
+{
+	public bool buttonChangeWithGestures = true;
+	public bool buttonChangeWithKeys = true;
+	public Text scoreTxt;
+	private PanelCenter panelCenter;
+	private GestureListener gestureListener;
+	public Text continueBtn;
+	public Text returnMenuBtn;
+	public Image continueFruit;
+	public Image returnMenuFruit;
+	private Animator continueAni;
+	private Animator returnAni;
+	private int curBtnOutY = -300;
+	private int gravityScale = 10;
+	private int upForce = 3000;
+	private bool isChosing = false;
+	private Image curBtn;
+
+	void Start ()
+	{
+		SingularValue.ifCheckGesture = true;
+		Screen.showCursor = false;
+		panelCenter = GameObject.FindWithTag ("Canvas").GetComponent<PanelCenter> ();
+		gestureListener = Camera.main.GetComponent<GestureListener>();
+		scoreTxt.text = panelCenter.scoreNum + "";
+		continueAni = continueFruit.GetComponent<Animator> ();
+		returnAni = returnMenuFruit.GetComponent<Animator> ();
+		returnAni.enabled = false;
+		curBtn = continueFruit;
+	}
+
+	void Update ()
+	{
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			panelCenter.showFirstPanel ();
+			Destroy (gameObject);
+		}
+
+		KinectManager manager = KinectManager.Instance;
+		if (!manager || !manager.IsInitialized () || !manager.IsUserDetected())
+			return;
+
+		if (!isChosing) {
+			if (buttonChangeWithGestures) {
+				if (Input.GetKey (KeyCode.LeftArrow)) {
+					moveToAnother ();
+				} else if (Input.GetKey (KeyCode.RightArrow)) {
+					moveToAnother ();
+				} else if (Input.GetKey (KeyCode.Space)) {
+					chooseBtn ();
+				}
+			}
+			if (buttonChangeWithGestures && gestureListener) {
+				if (gestureListener.isSwipeRight ()) {
+					moveToAnother ();
+				} else if (gestureListener.isSwipeLeft ()) {
+					moveToAnother ();
+				} else if (gestureListener.isChooseGesture ()) {
+					chooseBtn ();
+				}
+			}	
+		} 
+		else {
+			ifAllowChangePanel();
+		}
+	}
+
+	private void moveToAnother(){
+		if (curBtn == continueFruit) {
+			continueAni.enabled = false;
+			curBtn = returnMenuFruit;
+			//if(!returnAni.enabled)
+			returnAni.enabled = true;
+		} else {
+			returnAni.enabled = false;
+			curBtn = continueFruit;
+			//if(!continueFruit.enabled)
+			continueAni.enabled = true;
+		}
+	}
+
+	private void chooseBtn(){
+		isChosing = true;
+		Rigidbody2D continueRb = continueFruit.GetComponent<Rigidbody2D> ();
+		Rigidbody2D returnRb = returnMenuFruit.GetComponent<Rigidbody2D> ();
+		continueRb.gravityScale = gravityScale;
+		returnRb.gravityScale = gravityScale;
+		continueBtn.enabled = false;
+		returnMenuBtn.enabled = false;
+		if (curBtn == continueFruit) {
+			continueRb.AddForce (new Vector2 (0, upForce));
+		} else {
+			returnRb.AddForce(new Vector2(0,upForce));
+		}
+	}
+
+	private void ifAllowChangePanel(){
+		RectTransform rtf = curBtn.transform as RectTransform;
+		if (rtf.anchoredPosition.y < curBtnOutY) {
+			if(curBtn == continueFruit){
+				if(panelCenter.gameType == 1){
+					panelCenter.showGamePanel();
+				}
+				else {
+					panelCenter.showGame2Panel();
+				}
+			}else {
+				panelCenter.showFirstPanel();
+			}
+			Destroy(gameObject);
+		}
+	}
+
+}

@@ -1,0 +1,148 @@
+﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+using System.Collections.Generic;
+
+public class GameRule : MonoBehaviour
+{
+	public Fruit fruitClone;
+	public Transform leftTrailClone;
+	public Transform rightTrailClone;
+	public Image gameOver;
+	private bool ifGameOver = false;
+	public int forceX = 300;
+	public int forceY = 7000;
+	public int forceHalfY = 3000;
+	private const int minX = -288;
+	private const int maxX = 288;
+	private const int fruitY = -275;
+	private const int fruitOutY = -275;
+	private Fruit currentFruit;
+	private Transform[] leftTrail;
+	private Transform[] rightTrail;
+	public LifeContent lifeContent;
+	public Text scoreTxt;
+	private PanelCenter panelCenter;
+	public RectTransform playOverColone;
+	private int num;
+	public int lifeNum = 3;
+	public int scoreNum = 0;
+	public Text gameStart;
+	private int playerNum;
+
+	void Start ()
+	{
+		playerNum = SingularValue.playerNumber;
+		createMultiTrail ();
+		Invoke ("destroyGameStart", 3);
+		InvokeRepeating ("createMulFruit", 3, 2f);
+		GameObject canvasObj = GameObject.FindWithTag ("Canvas");
+		panelCenter = canvasObj.GetComponent<PanelCenter> ();
+	}
+
+	void Update ()
+	{
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			panelCenter.showFirstPanel ();
+			Destroy (gameObject);
+		}
+		if(currentFruit != null || !ifGameOver){
+			if (KinectManager.Instance.IsUserDetected ()) {
+				List<long> players = new List<long> ();
+				players = KinectManager.Instance.GetUsersIdByNum (playerNum);
+				int jointRightType = (int)KinectInterop.JointType.HandRight;
+				int jointLeftType = (int)KinectInterop.JointType.HandLeft;
+				foreach (long userId in players) {
+					if (KinectManager.Instance.IsJointTracked (userId, jointRightType)) {
+						Vector3 HandPos = KinectManager.Instance.GetJointKinectPosition (userId, jointRightType);//获取右手信息
+						rightTrail [players.IndexOf (userId)].position = HandPos;
+					} 
+					if (KinectManager.Instance.IsJointTracked (userId, jointLeftType)) {
+						Vector3 HandPos = KinectManager.Instance.GetJointKinectPosition (userId, jointLeftType);//获取左手信息
+						leftTrail [players.IndexOf (userId)].position = HandPos;	
+					}
+				}
+			}
+		}
+
+		panelCenter.scoreNum = scoreNum;
+		if (lifeNum <= 0 && !ifGameOver) {
+			CancelInvoke ();
+			gameOver.gameObject.SetActive (true);
+			createPlayOver ();
+			Invoke ("destroyGamePanel", 4);
+			ifGameOver = true;
+		}
+	}
+
+	private void destroyGamePanel ()
+	{
+		panelCenter.showGameOverPanel ();
+		Destroy (gameObject);
+	}
+
+	private void destroyGameStart(){
+		Destroy (gameStart.gameObject);
+	}
+
+	private void createMulFruit ()
+	{
+		num = Random.Range (1, 6);
+		for (int i = 0; i<num; i++) {
+			createFruit ();
+		}
+	}
+
+	private void createMultiTrail ()
+	{
+		leftTrail = new Transform[playerNum];
+		rightTrail = new Transform[playerNum];
+		for (int i = 0; i < playerNum; i++) {
+			leftTrail [i] = Instantiate (leftTrailClone) as Transform;
+			leftTrail [i].transform.SetParent (transform);
+			rightTrail [i] = Instantiate (rightTrailClone) as Transform;
+			rightTrail [i].transform.SetParent (transform);
+		}
+	}
+
+	private Fruit createFruit ()
+	{
+		currentFruit = Instantiate (fruitClone) as Fruit;
+		currentFruit.transform.SetParent (transform);
+		RectTransform fruitRt = currentFruit.transform as RectTransform;
+		int fruitX = Random.Range (minX, maxX); 
+		fruitRt.anchoredPosition3D = new Vector3 (fruitX, fruitY, 0);
+		fruitRt.localScale = new Vector3 (1, 1, 1);
+		int[] types = {
+			Contant.Type_Boom ,
+			Contant.Type_Apple ,
+			Contant.Type_Banana ,
+			Contant.Type_Basaha,
+			Contant.Type_Peach ,
+			Contant.Type_Sandia
+		};
+		int type = Random.Range (0, 5);
+		int fruitType = types [type];
+		currentFruit.setType (fruitType);//随机生成了水果
+		Rigidbody2D rigid2d = currentFruit.GetComponent<Rigidbody2D> ();
+		//由水果的位置决定水果作用力的方向
+		if (fruitX > 0) {
+			rigid2d.AddForce (new Vector2 (-forceX, forceY));
+		} else {
+			rigid2d.AddForce (new Vector2 (forceX, forceY));
+		}
+		return currentFruit;
+
+	}
+
+	private void createPlayOver ()
+	{
+		RectTransform playOver = Instantiate (playOverColone, playOverColone.position, playOverColone.rotation) as RectTransform;
+		playOver.SetParent (transform);
+		playOver.anchoredPosition3D = new Vector3 (0, 0, 0);
+		playOver.localScale = new Vector3 (1, 1, 1);
+		playOver.offsetMin = new Vector2 (0, 0);
+		playOver.offsetMax = new Vector2 (0, 0);
+	}
+
+}
