@@ -5,7 +5,8 @@ using System.Collections.Generic;
 
 public class GamingState : State
 {
-    private static GamingState instance = null;
+    //private static GamingState instance = null;
+    private static GamingState instance;
     private Game2Rule gameRule;
     private LifeContent lifeControl;
     private TimeControl timeControl;
@@ -31,16 +32,8 @@ public class GamingState : State
         {
             timeControl = TimeControl.Instance;
             timeControl.isGameStart = true;
-            if (timeControl.time == 4)
-            {
-                MessageDispatcher.Instance.dispatchMessage(0.0f, EntityType.TimeGamePanelEntity, MessageType.Msg_AlmostOver, new Vector2(0, 0), 0);
-            }
-            if (timeControl.time == 0)
-            {
-                MessageDispatcher.Instance.dispatchMessage(0.0f, EntityType.TimeGamePanelEntity, MessageType.Msg_GameOver, new Vector2(0, 0), 0);
-            }
-            //MessageDispatcher.Instance.dispatchMessage(60.0f, EntityType.TimeGamePanelEntity, MessageType.Msg_GameOver, new Vector2(0, 0), 0);
-            //MessageDispatcher.Instance.dispatchMessage(56.0f, EntityType.TimeGamePanelEntity, MessageType.Msg_AlmostOver, new Vector2(0, 0), 0);
+            MessageDispatcher.Instance.dispatchMessage(60.0f, EntityType.TimeGamePanelEntity, MessageType.Msg_GameOver, new Vector2(0, 0), 0);
+            MessageDispatcher.Instance.dispatchMessage(56.0f, EntityType.TimeGamePanelEntity, MessageType.Msg_AlmostOver, new Vector2(0, 0), 0);
         }
         else
         {
@@ -179,6 +172,7 @@ public class GamingState : State
             force = new Vector2(forceX, forceY);
         }
         rigid2d.AddForce(force);
+        //Debug.Log(TimeControl.Instance.time);
     }
 
     private void createBomb()
@@ -245,7 +239,7 @@ public class GamingState : State
     {
         bombBlowReflect.SetActive(false);
         KinectManager.Instance.enabled = true;
-        InvokeRepeating("generateFruits", 0.0f, 3.0f);
+        //InvokeRepeating("generateFruits", 0.0f, 3.0f);
     }
 
     private void createLotsOfFruits()

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 
 public class LifeGameState : State {
@@ -19,7 +20,11 @@ public class LifeGameState : State {
 	}
 	public override bool onMessage(Message msg){
 		if (msg.msg == MessageType.Msg_GameOver) {
-			GameOverState.Instance.score = msg.score;
+            GameOverState.Instance.score = new ScoreElem
+            {
+                Date = DateTime.Now,
+                Score = msg.score
+            };
 			pc.changeState(GameOverState.Instance);
 			return true;
 		}

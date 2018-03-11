@@ -41,6 +41,8 @@ public class ShowExitInGame : MonoBehaviour
             {
                 ifExitShowed = false;
                 exitTip.SetActive(false);
+                MessageDispatcher.Instance.RemoveSpecificMessage(MessageType.Msg_AlmostOver);
+                MessageDispatcher.Instance.RemoveSpecificMessage(MessageType.Msg_GameOver);
                 MessageDispatcher.Instance.dispatchMessage(0.0f, Singleton.gameType,
                     MessageType.Msg_GameOver, new Vector2(0, 0), ScoreControl.Instance.score);
             }

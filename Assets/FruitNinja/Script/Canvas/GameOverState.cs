@@ -7,12 +7,17 @@ using UnityEngine.UI;
 public class GameOverState : State {
 	private PanelCenter pc;
 	private static GameOverState instance = null;
-	public int score;
+    private ScoreBoard scoreBoard;
+
+	public ScoreElem score;
+
 	void Awake(){
 		instance = this;
 	}
 	public override void enter(){
 		pc = PanelCenter.Instance;
+        scoreBoard = ScoreBoard.Instance;
+        scoreBoard.SetScoreList(score);
 		pc.showGameOverPanel();
 	}
 	public override void execute(){

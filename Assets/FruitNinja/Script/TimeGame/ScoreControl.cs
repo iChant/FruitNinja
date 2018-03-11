@@ -26,7 +26,7 @@ public class ScoreControl : MonoBehaviour {
         if (Time.time - LastScoreTime >= 5.0f && !ShowExitInGame.ifExitShowed)
         {
             MessageDispatcher.Instance.dispatchMessage(0.0f, Singleton.gameType, MessageType.Msg_ShowExitInGame, new Vector2(0, 0), 0);
-            Debug.Log(LastScoreTime.ToString());
+            //Debug.Log(LastScoreTime.ToString());
             LastScoreTime = Time.time;
         }
 	}

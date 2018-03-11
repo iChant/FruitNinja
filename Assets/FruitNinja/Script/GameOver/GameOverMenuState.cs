@@ -72,7 +72,7 @@ public class GameOverMenuState : State {
 		gameOverListener.returnAni = gameOverListener.returnMenuFruit.GetComponent<Animator> ();
 		gameOverListener.continueAni.enabled = true;
 		gameOverListener.returnAni.enabled = false;
-		gameOverListener.scoreTxt.text = GameOverState.Instance.score + "";
+		gameOverListener.scoreTxt.text = GameOverState.Instance.score.Score.ToString();
 	}
 	public static GameOverMenuState Instance{
 		get{

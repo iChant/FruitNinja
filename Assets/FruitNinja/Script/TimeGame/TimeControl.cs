@@ -20,9 +20,14 @@ public class TimeControl : MonoBehaviour {
 			if(timeNow - timeStart >= 1.0f){
 				time--;
 				timeStart = timeNow;
+                //Debug.Log(time + "");
 			}
 			if(time == 0)
-				isGameStart = false;
+            {
+                isGameStart = false;
+                //time = 60;
+            }
+
 		}
 	}
 	public static TimeControl Instance{

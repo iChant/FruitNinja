@@ -73,4 +73,9 @@ public class MessageDispatcher : MonoBehaviour {
 			return list;
 		}
 	}
+
+    public void RemoveSpecificMessage(MessageType msgType)
+    {
+        delayMessage.RemoveAll(msg => msg.msg == msgType);
+    }
 }
