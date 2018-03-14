@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfScoreElem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ScoreElem>
+    <Score>17</Score>
+    <Date>2018-03-13T17:13:55.0558171+08:00</Date>
+  </ScoreElem>
+  <ScoreElem>
+    <Score>17</Score>
+    <Date>2018-03-13T17:13:55.0558171+08:00</Date>
+  </ScoreElem>
+  <ScoreElem>
+    <Score>6</Score>
+    <Date>2018-03-13T17:33:46.5302799+08:00</Date>
+  </ScoreElem>
+  <ScoreElem>
+    <Score>6</Score>
+    <Date>2018-03-13T17:33:46.5302799+08:00</Date>
+  </ScoreElem>
+  <ScoreElem>
+    <Score>0</Score>
+    <Date>9999-12-31T00:00:00</Date>
+  </ScoreElem>
+</ArrayOfScoreElem>

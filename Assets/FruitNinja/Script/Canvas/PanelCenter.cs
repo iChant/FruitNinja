@@ -7,6 +7,7 @@ public class PanelCenter : MonoBehaviour {
 	public RectTransform gamePanelColone;
 	public RectTransform gameOverPanelColone;
 	public RectTransform game2PanelColone;
+    public RectTransform scoreBoardClone;
 	public int scoreNum = 0;
 	public int gameType = 1;                        // TODO: The usage of gameType? 
 	private StateMachine stateMachine;
@@ -66,6 +67,7 @@ public class PanelCenter : MonoBehaviour {
 		game2Panel.offsetMax = new Vector2 (0,0);
 		return game2Panel;
 	}
+
 	public void showGamePanel(){
 		EntityManager.Instance.registerEntity (createGamePanel ().gameObject, EntityType.LifeGamePanelEntity);
 		Singleton.gameType = EntityType.LifeGamePanelEntity;

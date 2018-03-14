@@ -12,7 +12,8 @@ public class GameoverState : State {
 		instance = this;
 	}
 	public override void enter(){
-		gameOverImg.gameObject.SetActive(true);
+        Debug.Log("GameoverState enter!");
+        gameOverImg.gameObject.SetActive(true);
 		gameObject.GetComponent<AudioSource> ().clip = over;
 		gameObject.GetComponent<AudioSource> ().Play ();
 		scoreControl = ScoreControl.Instance;
@@ -21,7 +22,8 @@ public class GameoverState : State {
 	public override void execute(){
 	}
 	public override void exit(){
-	}
+        Debug.Log("GameoverState exit!");
+    }
 	public override bool onMessage(Message msg){
 		return true;
 	}

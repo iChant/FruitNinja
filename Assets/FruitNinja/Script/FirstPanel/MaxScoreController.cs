@@ -11,7 +11,6 @@ public class MaxScoreController : MonoBehaviour {
     void Awake()
     {
         scoreBoard = ScoreBoard.Instance;
-        maxScoreText = GetComponent<Text>();
     }
 
 	// Use this for initialization

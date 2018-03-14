@@ -1,13 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.UI;
 
 
 public class GameOverState : State {
 	private PanelCenter pc;
 	private static GameOverState instance = null;
-    private ScoreBoard scoreBoard;
+    //private ScoreBoard scoreBoard;
 
 	public ScoreElem score;
 
@@ -15,14 +12,16 @@ public class GameOverState : State {
 		instance = this;
 	}
 	public override void enter(){
-		pc = PanelCenter.Instance;
-        scoreBoard = ScoreBoard.Instance;
-        scoreBoard.SetScoreList(score);
+        Debug.Log("GameOverState enter!");
+        pc = PanelCenter.Instance;
+        //scoreBoard = ScoreBoard.Instance;
+        //scoreBoard.SetScoreList(score);
 		pc.showGameOverPanel();
 	}
 	public override void execute(){
 	}
 	public override void exit(){
+        Debug.Log("GameOverState exited!");
 		Destroy (EntityManager.Instance.getEntityFromId (EntityType.GameOverEntity));
 		EntityManager.Instance.removeEntity (EntityType.GameOverEntity);
 		GestureListener.ifDetectGesture = false;

@@ -225,11 +225,8 @@ public class GamingState : State
         {
             gameObjects[i].GetComponent<DetectIfCut>().needDestroy = true;
         }
-        // DONE
-        if (Singleton.gameType == EntityType.TimeGamePanelEntity)
-        {
-            cutBombReflect(pos);
-        }
+        CutBombReflect(pos);
+
         CameraShake.Instance.shake();
         Invoke("destroyTag", 1.5f);
     }
@@ -239,7 +236,7 @@ public class GamingState : State
     {
         bombBlowReflect.SetActive(false);
         KinectManager.Instance.enabled = true;
-        //InvokeRepeating("generateFruits", 0.0f, 3.0f);
+        InvokeRepeating("generateFruits", 0.0f, 3.0f);
     }
 
     private void createLotsOfFruits()
@@ -257,7 +254,7 @@ public class GamingState : State
         CancelInvoke("createBomb");
     }
 
-    private void cutBombReflect(Vector2 pos)
+    private void CutBombReflect(Vector2 pos)
     {
         bombBlowReflect.SetActive(true);
         RectTransform tipRtf = bombBlowReflect.GetComponent<bombBlowTip>().bombBlowTipRtf;

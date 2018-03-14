@@ -6,6 +6,7 @@ public class GameOverListener : MonoBehaviour
 {
 	private StateMachine stateMachine;
 	private static GameOverListener instance = null;
+
 	public RawImage kinectImg;
 	public Animator continueAni;
 	public Animator returnAni;
@@ -14,6 +15,7 @@ public class GameOverListener : MonoBehaviour
 	public Image continueFruit;
 	public Image returnMenuFruit;
 	public Text scoreTxt;
+    public GameObject scoreBoardPanel;
 
 	void Start ()
 	{
